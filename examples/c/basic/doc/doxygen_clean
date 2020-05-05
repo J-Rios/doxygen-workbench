@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+OUTPUT_DIRECTORY="./doxygen_output"
+
+rm -rf ${OUTPUT_DIRECTORY}
+
+exit 0

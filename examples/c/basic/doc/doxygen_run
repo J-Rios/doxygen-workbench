@@ -1,0 +1,44 @@
+#!/usr/bin/env bash
+
+###################################################################################################
+
+PROJECT_NAME="Fibonacci Test"
+PROJECT_DESCRIPTION="Fibonacci number calculation according to given fibonacci serie index."
+PROJECT_VERSION="1.0.0"
+INPUT_DIRECTORY="../src"
+OUTPUT_DIRECTORY="./doxygen_output"
+
+###################################################################################################
+
+echo ""
+
+# Check if Doxygen is installed
+doxygen -v &> /dev/null
+if [[ $? != 0 ]]; then
+    echo "Error: Doxygen not found."
+    echo "Please install it through \"doxygen_install\" script."
+    echo ""
+    exit 1
+fi
+
+# Create Doxyfile if it does not exists
+if [ -f "./Doxyfile" ]; then
+    echo "Doxyfile detected."
+else 
+    doxygen -g
+    echo "Doxyfile generated."
+fi
+echo ""
+
+# Setup Project Parameters to DoxyFile for Doxygen generation
+sed -i "/PROJECT_NAME/c\PROJECT_NAME = ${PROJECT_NAME}" ./Doxyfile
+sed -i "/PROJECT_BRIEF/c\PROJECT_BRIEF = \"${PROJECT_DESCRIPTION}\"" ./Doxyfile
+sed -i "/PROJECT_NUMBER/c\PROJECT_NUMBER = ${PROJECT_VERSION}" ./Doxyfile
+sed -i "/INPUT/c\INPUT = ${INPUT_DIRECTORY}" ./Doxyfile
+sed -i "/OUTPUT_DIRECTORY/c\OUTPUT_DIRECTORY = ${OUTPUT_DIRECTORY}" ./Doxyfile
+
+# Launch Doxygen
+doxygen
+echo ""
+
+exit 0
