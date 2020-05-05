@@ -1,0 +1,60 @@
+#!/usr/bin/env bash
+
+###################################################################################################
+
+# Check for root privileges
+if [ "$(id -u)" != "0" ]; then
+    echo "This script must be executed with administration privileges."
+    echo ""
+    exit 1
+fi
+
+###################################################################################################
+
+echo ""
+echo "Installing Doxygen..."
+echo ""
+
+# Updating Repositories
+echo "-------------------------------------------------"
+echo " Updating Repositories"
+echo "-------------------------------------------------"
+apt-get update
+echo ""
+
+# Install Doxygen
+echo "-------------------------------------------------"
+echo " Installing Doxygen package                      "
+echo "-------------------------------------------------"
+apt-get -y install doxygen
+if [[ $? != 0 ]]; then
+    echo "Error: Can't install doxygen package."
+    echo ""
+    exit 1
+fi
+echo ""
+
+# Install Doxygen Requeriments
+echo "-------------------------------------------------"
+echo " Installing requeriment packages (graphviz)      "
+echo "-------------------------------------------------"
+apt-get -y install graphviz
+if [[ $? != 0 ]]; then
+    echo "Error: Can't install graphviz package."
+    echo ""
+    exit 1
+fi
+echo ""
+
+# Show and check installed version
+echo "Doxygen successfully installed."
+DOXYGEN_VER=`doxygen -v`
+if [[ $? != 0 ]]; then
+    echo "Error: Can't get installed Doxygen Version."
+    echo ""
+    exit 1
+fi
+echo "Doxygen version: ${DOXYGEN_VER}"
+echo ""
+
+exit 0
