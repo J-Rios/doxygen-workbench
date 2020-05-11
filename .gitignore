@@ -1,5 +1,4 @@
-examples/**/html/
-examples/**/latex/
+examples/**/doxygen_output/
 .vscode/
 ./**/.vscode/
 __pycache__/

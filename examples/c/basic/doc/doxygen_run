@@ -5,8 +5,10 @@
 PROJECT_NAME="Fibonacci Test"
 PROJECT_DESCRIPTION="Fibonacci number calculation according to given fibonacci serie index."
 PROJECT_VERSION="1.0.0"
-INPUT_DIRECTORY="../src"
+INPUT_DIRECTORY="./../src"
 OUTPUT_DIRECTORY="./doxygen_output"
+FULL_PATH_NAMES="NO"
+GENERATE_LATEX="NO"
 
 ###################################################################################################
 
@@ -31,11 +33,13 @@ fi
 echo ""
 
 # Setup Project Parameters to DoxyFile for Doxygen generation
-sed -i "/PROJECT_NAME/c\PROJECT_NAME = ${PROJECT_NAME}" ./Doxyfile
-sed -i "/PROJECT_BRIEF/c\PROJECT_BRIEF = \"${PROJECT_DESCRIPTION}\"" ./Doxyfile
-sed -i "/PROJECT_NUMBER/c\PROJECT_NUMBER = ${PROJECT_VERSION}" ./Doxyfile
-sed -i "/INPUT/c\INPUT = ${INPUT_DIRECTORY}" ./Doxyfile
-sed -i "/OUTPUT_DIRECTORY/c\OUTPUT_DIRECTORY = ${OUTPUT_DIRECTORY}" ./Doxyfile
+sed -i "/^PROJECT_NAME  *=/c\PROJECT_NAME = \"${PROJECT_NAME}\"" ./Doxyfile
+sed -i "/^PROJECT_BRIEF  *=/c\PROJECT_BRIEF = \"${PROJECT_DESCRIPTION}\"" ./Doxyfile
+sed -i "/^PROJECT_NUMBER  *=/c\PROJECT_NUMBER = \"${PROJECT_VERSION}\"" ./Doxyfile
+sed -i "/^INPUT  *=/c\INPUT = ${INPUT_DIRECTORY}" ./Doxyfile
+sed -i "/^OUTPUT_DIRECTORY  *=/c\OUTPUT_DIRECTORY = ${OUTPUT_DIRECTORY}" ./Doxyfile
+sed -i "/^FULL_PATH_NAMES  *=/c\FULL_PATH_NAMES = ${FULL_PATH_NAMES}" ./Doxyfile
+sed -i "/^GENERATE_LATEX  *=/c\GENERATE_LATEX = ${GENERATE_LATEX}" ./Doxyfile
 
 # Launch Doxygen
 doxygen
