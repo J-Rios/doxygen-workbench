@@ -2,7 +2,66 @@
 
 ###################################################################################################
 
-# Check for root privileges
+# Auxiliar Functions #
+
+function showhelp {
+    echo ""
+    echo "  This Script install Doxygen and required packages automatically."
+    echo ""
+    echo "  Usage:"
+    echo "    $(basename $0) [OPTIONS]"
+    echo ""
+    echo "  Options:"
+    echo "    -h, --help       Show actual information."
+    echo "    -f, --force      If Doxygen is already installed, force to uninstall and reinstall into \
+1.8.18 version."
+    echo "    -u, --uninstall  Uninstall Doxygen."
+    echo ""
+}
+
+function installdoxygen {
+    /usr/bin/install -d /usr/local/bin
+    /usr/bin/install -d /usr/local/doc/doxygen
+    /usr/bin/install -d /usr/local/man/man1
+    /usr/bin/install -m 755 bin/doxygen /usr/local/bin
+    cp -r html /usr/local/doc/doxygen
+    cp -r examples /usr/local/doc/doxygen
+    cp doxygen_manual*.pdf /usr/local/doc/doxygen
+    cp man/man1/* /usr/local/man/man1/
+}
+
+function uninstalldoxygen {
+    rm -f /usr/local/bin/doxygen
+    rm -rf /usr/local/doc/doxygen/
+    rm -rf /usr/local/man/man1/doxy*
+}
+
+###################################################################################################
+
+# Check Provided Arguments #
+
+forceinstall=0
+uninstall=0
+
+# For each provided argument
+for i in "$@"
+do
+    # Check for expected arguments
+    if [[ "$i" == "-h" || "$i" == "--help" ]]; then
+        showhelp
+        exit 0
+    elif [[ "$i" == "-f" || "$i" == "--force" ]]; then
+        forceinstall=1
+    elif [[ "$i" == "-u" || "$i" == "--uninstall" ]]; then
+        uninstall=1
+    else
+        echo "Ignoring unknown argument '${i}'."
+    fi
+done
+
+###################################################################################################
+
+# Check for root privileges #
 if [ "$(id -u)" != "0" ]; then
     echo "This script must be executed with administration privileges."
     echo ""
@@ -10,6 +69,32 @@ if [ "$(id -u)" != "0" ]; then
 fi
 
 ###################################################################################################
+
+# Uninstall Option (doxygen_install --uninstall) #
+
+if [[ "$uninstall" -eq 1 ]]; then
+    echo ""
+    echo "Uninstalling Doxygen..."
+    echo ""
+
+    apt-get -y purge doxygen
+    uninstalldoxygen
+
+    # Show and check installed version
+    DOXYGEN_VER=`doxygen -v 2> /dev/null`
+    if [[ $? == 0 ]]; then
+        echo "Error: Doxygen fail to be uninstalled."
+        echo ""
+        exit 1
+    fi
+    echo "Doxygen successfully uninstalled."
+    echo ""
+    exit 0
+fi
+
+###################################################################################################
+
+# Install Option (doxygen_install || doxygen_install --force) #
 
 echo ""
 echo "Installing Doxygen..."
@@ -20,18 +105,6 @@ echo "-------------------------------------------------"
 echo " Updating Repositories"
 echo "-------------------------------------------------"
 apt-get update
-echo ""
-
-# Install Doxygen
-echo "-------------------------------------------------"
-echo " Installing Doxygen package                      "
-echo "-------------------------------------------------"
-apt-get -y install doxygen
-if [[ $? != 0 ]]; then
-    echo "Error: Can't install doxygen package."
-    echo ""
-    exit 1
-fi
 echo ""
 
 # Install Doxygen Requeriments
@@ -46,15 +119,60 @@ if [[ $? != 0 ]]; then
 fi
 echo ""
 
-# Show and check installed version
-echo "Doxygen successfully installed."
-DOXYGEN_VER=`doxygen -v`
+# Install Doxygen
+echo "-------------------------------------------------"
+echo " Installing Doxygen package                      "
+echo "-------------------------------------------------"
+DOXYGEN_VER=`doxygen -v 2> /dev/null`
+if [[ $? == 0 ]]; then
+    echo "Doxygen is already installed."
+    echo "Current Doxygen version: ${DOXYGEN_VER}"
+    if [[ "$forceinstall" -eq 0 ]]; then
+        echo "Use [--force] option to force uninstall current version and install 1.8.18 \
+version."
+        echo ""
+        exit 0
+    fi
+    echo "Force reinstallation."
+    echo "Uninstalling current version..."
+    apt-get -y purge doxygen
+    uninstalldoxygen
+fi
+echo "Downloading Doxygen 1.8.18..."
+rm -rf doxygen-1.8.18
+rm -rf doxygen-1.8.18.linux.bin.tar.gz*
+wget http://doxygen.nl/files/doxygen-1.8.18.linux.bin.tar.gz
 if [[ $? != 0 ]]; then
-    echo "Error: Can't get installed Doxygen Version."
+    echo "Error: Doxygen download fail."
     echo ""
     exit 1
 fi
-echo "Doxygen version: ${DOXYGEN_VER}"
+echo "Unpacking..."
+tar -xzf doxygen-1.8.18.linux.bin.tar.gz
+if [[ $? != 0 ]]; then
+    echo "Error: Doxygen extraction fail."
+    rm -f doxygen-1.8.18.linux.bin.tar.gz*
+    echo ""
+    exit 1
+fi
+echo "Installing..."
+cd doxygen-1.8.18
+installdoxygen
+cd ..
+echo "Cleaning temporary files..."
+rm -rf doxygen-1.8.18
+rm -rf doxygen-1.8.18.linux.bin.tar.gz*
+echo ""
+
+# Show and check installed version
+DOXYGEN_VER=`doxygen -v 2> /dev/null`
+if [[ $? != 0 ]]; then
+    echo "Error: Doxygen installation fail."
+    echo ""
+    exit 1
+fi
+echo "Doxygen successfully installed."
+echo "Doxygen installed version: ${DOXYGEN_VER}"
 echo ""
 
 exit 0
